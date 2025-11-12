@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>n8n Upload Form</title>
+</head>
+<body>
+  <h2>Shop Upload Form</h2>
+  <form 
+    action="https://seanfoo404.app.n8n.cloud/webhook-test/ebc2b1a4-d1df-4edf-97dd-195b5c095024"
+    method="POST" 
+    enctype="multipart/form-data"
+  >
+    <label>Shop Name:</label><br>
+    <input type="text" name="Shop Name" required><br><br>
+
+    <label>Shop Description:</label><br>
+    <textarea name="Shop Description" rows="4"></textarea><br><br>
+
+    <label>Address:</label><br>
+    <input type="text" name="Address"><br><br>
+
+    <label>Operation Hours:</label><br>
+    <input type="text" name="Operation Hours"><br><br>
+
+    <label>Cover Image:</label><br>
+    <input type="file" name="Cover Image" accept="image/*"><br><br>
+
+    <label>Content Images:</label><br>
+    <input type="file" name="Content Images" multiple accept="image/*"><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+</body>
+</html>
