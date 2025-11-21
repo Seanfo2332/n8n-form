@@ -1,36 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>n8n Upload Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻提交表单</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        input[type="file"] {
+            padding: 10px 0;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .success-message {
+            display: none;
+            padding: 15px;
+            background: #4caf50;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .error-message {
+            display: none;
+            padding: 15px;
+            background: #f44336;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-  <h2>Shop Upload Form</h2>
-<form 
-  action="https://seanfoo404.app.n8n.cloud/webhook/submit-form"
-  method="POST" 
-  enctype="multipart/form-data"
->
-    <label>Shop Name:</label><br>
-    <input type="text" name="Shop Name" required><br><br>
+    <div class="container">
+        <h2>📰 新闻提交表单</h2>
+        
+        <div class="success-message" id="successMessage">
+            ✅ 提交成功！
+        </div>
+        
+        <div class="error-message" id="errorMessage">
+            ❌ 提交失败，请重试
+        </div>
+        
+        <form id="newsForm">
+            <div class="form-group">
+                <label for="newsTitle">新闻标题 *</label>
+                <input type="text" id="newsTitle" name="新闻标题" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="newsContent">新闻内容 *</label>
+                <textarea id="newsContent" name="新闻内容" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">地点 *</label>
+                <input type="text" id="location" name="地点" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="coverImage">封面图片 (Cover Image) *</label>
+                <input type="file" id="coverImage" name="Cover Image" accept="image/*" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="contentImages">内容图片 (Content Images)</label>
+                <input type="file" id="contentImages" name="Content images" accept="image/*" multiple>
+            </div>
+            
+            <button type="submit" id="submitBtn">提交</button>
+        </form>
+    </div>
 
-    <label>Shop Description:</label><br>
-    <textarea name="Shop Description" rows="4"></textarea><br><br>
-
-    <label>Address:</label><br>
-    <input type="text" name="Address"><br><br>
-
-    <label>Operation Hours:</label><br>
-    <input type="text" name="Operation Hours"><br><br>
-
-    <label>Cover Image:</label><br>
-    <input type="file" name="Cover Image" accept="image/*"><br><br>
-
-    <label>Content Images:</label><br>
-    <input type="file" name="Content Images" multiple accept="image/*"><br><br>
-
-    <button type="submit">Submit</button>
-  </form>
+    <script>
+        // 🔥 IMPORTANT: Replace this with your actual n8n webhook URL
+        const WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE';
+        
+        document.getElementById('newsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const form = document.getElementById('newsForm');
+            
+            // Hide previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Show loading state
+            submitBtn.textContent = '提交中...';
+            submitBtn.classList.add('loading');
+            
+            // Prepare form data
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    successMessage.style.display = 'block';
+                    form.reset();
+                    
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 5000);
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = '❌ 提交失败: ' + error.message;
+                
+                // Hide error message after 5 seconds
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 5000);
+            } finally {
+                // Reset button state
+                submitBtn.textContent = '提交';
+                submitBtn.classList.remove('loading');
+            }
+        });
+    </script>
 </body>
 </html>
